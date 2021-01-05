@@ -2,16 +2,23 @@
 //#include "pitches.h"
 
 
-int octave1[] = {
+int octave[] = {
   NOTE_C5, NOTE_D5, NOTE_E5, NOTE_F5, NOTE_G5, NOTE_A5, NOTE_B5, NOTE_C6};
   
-int b1, b2, b3, b4, b5, b6, b7, b8;
+int b1, b2, b3, b4, b5, b6, b7, b8, trackButton;
+int trackPin = 37;
 int buttonPins[] = {22, 23, 24, 25, 26, 27, 28, 29};
 int buzzerPins[] = {40, 41, 42, 43};
+int ledPins[] = {50, 51, 52, 53};
 
-Tone tone1, tone2, tone3, tone4;
+Tone tones[4];
+Tone currentTone;
+int currentToneIndex = 0;
 
 void setup() {
+  Serial.begin(9600);
+
+  
  // configurare pini pentru butoane, intrare
   pinMode(buttonPins[0], INPUT_PULLUP);
   pinMode(buttonPins[1], INPUT_PULLUP);
@@ -21,13 +28,24 @@ void setup() {
   pinMode(buttonPins[5], INPUT_PULLUP);
   pinMode(buttonPins[6], INPUT_PULLUP);
   pinMode(buttonPins[7], INPUT_PULLUP);
+  //pinMode(trackPin, INPUT);
 
+  pinMode(ledPins[0], OUTPUT);
+  pinMode(ledPins[1], OUTPUT);
+  pinMode(ledPins[2], OUTPUT);
+  pinMode(ledPins[3], OUTPUT);
 
   
-  tone1.begin(buzzerPins[0]);
-  tone2.begin(buzzerPins[1]);
-  //tone3.begin(buzzerPins[2]);
-  //tone4.begin(buzzerPins[3]);
+  //tones[0].begin(buzzerPins[0]);
+  //tones[1].begin(buzzerPins[1]);
+  //tones[2].begin(buzzerPins[2]);
+  //tones[3].begin(buzzerPins[3]);
+  
+  //currentTone = tones[0];
+  digitalWrite(ledPins[0], HIGH);
+  digitalWrite(ledPins[1], LOW);
+  digitalWrite(ledPins[2], LOW);
+  digitalWrite(ledPins[3], LOW);
 }
 
 void loop() {
@@ -40,42 +58,49 @@ void loop() {
   b6 = digitalRead(buttonPins[5]);
   b7 = digitalRead(buttonPins[6]);
   b8 = digitalRead(buttonPins[7]);
-
+  //trackButton = digitalRead(trackPin);
+  
+  
   if (b1 == LOW) {
-    tone1.play(NOTE_G4);
-    //tone(buzzerPins[0], NOTE_C4);
+    //currentTone.play(octave[0]);
+    Serial.println("b1");
+    delay(500);
   }
   else if (b2 == LOW) {
-    //tone(buzzerPins[0], NOTE_D4);
-    tone1.play(NOTE_A4);
+    //currentTone.play(octave[1]);
+    Serial.println("b2");
+    delay(500);
   }
   else if  (b3 == LOW) {
-    //tone(buzzerPins[0], NOTE_E4);
-    tone1.play(NOTE_C5);
+    //currentTone.play(octave[2]);
+    digitalWrite(ledPins[1], HIGH);
   }
   else if (b4 == LOW) {
-    tone1.play(NOTE_D5);
-    //tone(buzzerPins[0], NOTE_F4);
-  } else tone1.stop();
-  
-  if (b5 == LOW) {
-    tone2.play(NOTE_E5);
-    //tone(buzzerPins[0], NOTE_G4);
+    //currentTone.play(octave[3]);
+    digitalWrite(ledPins[1], LOW);
+  }
+  else if (b5 == LOW) {
+    //currentTone.play(octave[4]);
   }
   else if (b6 == LOW) {
-    tone2.play(NOTE_F5);
-    //tone(buzzerPins[0], NOTE_A4);
+    //currentTone.play(octave[5]);
   }
   else if (b7 == LOW) {
-    tone2.play(NOTE_G5);
-    //tone(buzzerPins[0], NOTE_B4);
+    //currentTone.play(octave[6]);
   }
   else if (b8 == LOW) {
-    tone2.play(NOTE_C6);
-    //tone(buzzerPins[0], NOTE_C5);
+    //currentTone.play(octave[7]);
   }
   else  {
-    tone2.stop();
+    //currentTone.stop();
   }
-  //else noTone(buzzerPins[0]);
+  /*
+  if (trackButton == LOW) {
+    currentTone.stop();
+    digitalWrite(ledPins[currentToneIndex], LOW);
+    currentToneIndex = (currentToneIndex + 1) % 2 ;
+    currentTone = tones[currentToneIndex];
+    digitalWrite(ledPins[currentToneIndex], HIGH);
+  }*/
+  
 }
