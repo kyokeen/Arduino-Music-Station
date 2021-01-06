@@ -1,49 +1,31 @@
 #include <Tone.h>
 //#include "pitches.h"
 
-
-int octave[] = {
-  NOTE_C5, NOTE_D5, NOTE_E5, NOTE_F5, NOTE_G5, NOTE_A5, NOTE_B5};
-int blackKeys[] = {NOTE_CS5, NOTE_DS5, NOTE_FS5, NOTE_GS5, NOTE_AS5};
+int* octave;
+int* blackKeys;
+int octave1[] = {NOTE_C5, NOTE_D5, NOTE_E5, NOTE_F5, NOTE_G5, NOTE_A5, NOTE_B5};
+int octave2[] = {NOTE_C6, NOTE_D6, NOTE_E6, NOTE_F6, NOTE_G6, NOTE_A6, NOTE_B6}; 
+int blackKeys1[] = {NOTE_CS5, NOTE_DS5, NOTE_FS5, NOTE_GS5, NOTE_AS5};
+int blackKeys2[] = {NOTE_CS6, NOTE_DS6, NOTE_FS6, NOTE_GS6, NOTE_AS6};
 
 bool once = true;
-int key1, key2, key3, key4, key5, key6, key7, key8, track1, track2;
+int key1, key2, key3, key4, key5, key6, key7, key8, track1, track2, octaveButton;
 int black1, black2, black3, black4, black5;
 int trackPins[] = {38, 39};;
 int buttonPins[] = {22, 23, 24, 25, 26, 27, 28};
 int blackKeyPins[] = {44, 45, 46, 47, 29};
 int buzzerPins[] = {40, 41, 42, 43};
 int ledPins[] = {50, 51, 52, 53};
+int octavePin = 30;
 
 Tone tones[4];
 Tone currentTone;
 int currentToneIndex = 0;
 
 void setup() {
- // configurare pini pentru butoane, intrare
-  pinMode(buttonPins[0], INPUT_PULLUP);
-  pinMode(buttonPins[1], INPUT_PULLUP);
-  pinMode(buttonPins[2], INPUT_PULLUP);
-  pinMode(buttonPins[3], INPUT_PULLUP);
-  pinMode(buttonPins[4], INPUT_PULLUP);
-  pinMode(buttonPins[5], INPUT_PULLUP);
-  pinMode(buttonPins[6], INPUT_PULLUP);
+  Serial.begin(9600);
+  pin_config();
 
-  pinMode(blackKeyPins[0], INPUT_PULLUP);
-  pinMode(blackKeyPins[1], INPUT_PULLUP);
-  pinMode(blackKeyPins[2], INPUT_PULLUP);
-  pinMode(blackKeyPins[3], INPUT_PULLUP);
-  pinMode(blackKeyPins[4], INPUT_PULLUP);
-  
-  pinMode(trackPins[0], INPUT_PULLUP);
-  pinMode(trackPins[1], INPUT_PULLUP);
-  
-  pinMode(ledPins[0], OUTPUT);
-  pinMode(ledPins[1], OUTPUT);
-  pinMode(ledPins[2], OUTPUT);
-  pinMode(ledPins[3], OUTPUT);
-
-  
   tones[0].begin(buzzerPins[0]);
   tones[1].begin(buzzerPins[1]);
   //tones[2].begin(buzzerPins[2]);
@@ -76,7 +58,16 @@ void loop() {
   track1 = digitalRead(trackPins[0]);
   track2 = digitalRead(trackPins[1]);
 
- 
+  octaveButton = digitalRead(octavePin);
+
+  if(octaveButton == LOW) {
+    octave = octave2;
+    blackKeys = blackKeys2;
+  } else {
+    octave = octave1;
+    blackKeys = blackKeys1;
+  }
+   
   if (key1 == LOW) {
     currentTone.play(octave[0]);
   }
@@ -130,4 +121,30 @@ void loop() {
     digitalWrite(ledPins[currentToneIndex], HIGH);
   }
   
+}
+
+void pin_config() {
+  pinMode(buttonPins[0], INPUT_PULLUP);
+  pinMode(buttonPins[1], INPUT_PULLUP);
+  pinMode(buttonPins[2], INPUT_PULLUP);
+  pinMode(buttonPins[3], INPUT_PULLUP);
+  pinMode(buttonPins[4], INPUT_PULLUP);
+  pinMode(buttonPins[5], INPUT_PULLUP);
+  pinMode(buttonPins[6], INPUT_PULLUP);
+
+  pinMode(blackKeyPins[0], INPUT_PULLUP);
+  pinMode(blackKeyPins[1], INPUT_PULLUP);
+  pinMode(blackKeyPins[2], INPUT_PULLUP);
+  pinMode(blackKeyPins[3], INPUT_PULLUP);
+  pinMode(blackKeyPins[4], INPUT_PULLUP);
+  
+  pinMode(trackPins[0], INPUT_PULLUP);
+  pinMode(trackPins[1], INPUT_PULLUP);
+  
+  pinMode(ledPins[0], OUTPUT);
+  pinMode(ledPins[1], OUTPUT);
+  pinMode(ledPins[2], OUTPUT);
+  pinMode(ledPins[3], OUTPUT);
+
+  pinMode(octavePin, INPUT_PULLUP);
 }
