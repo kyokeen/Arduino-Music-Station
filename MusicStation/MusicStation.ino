@@ -9,7 +9,7 @@ int blackKeys1[] = {NOTE_CS5, NOTE_DS5, NOTE_FS5, NOTE_GS5, NOTE_AS5};
 int blackKeys2[] = {NOTE_CS6, NOTE_DS6, NOTE_FS6, NOTE_GS6, NOTE_AS6};
 
 bool once = true;
-int key1, key2, key3, key4, key5, key6, key7, key8, track1, track2, track3, track4, octaveButton, recordButton, pauseButton;
+int key1, key2, key3, key4, key5, key6, key7, track1, track2, track3, track4, octaveButton, recordButton, pauseButton;
 int black1, black2, black3, black4, black5;
 int trackPins[] = {34, 33, 38, 39};
 int buttonPins[] = {22, 23, 24, 25, 26, 27, 28};
@@ -82,10 +82,10 @@ void loop() {
   //delay(100);
 
 
-  if(millis() > startTime_dbg + 500) {
-      startTime_dbg = millis();
-      Serial.println(playable[0]);
-    }
+  //if(millis() > startTime_dbg + 2000) {
+  //    startTime_dbg = millis();
+  //    Serial.println(playable[0]);
+  //  }
 
   process_rec_pause();
   play();
@@ -189,7 +189,6 @@ void pin_read() {
   key5 = digitalRead(buttonPins[4]);
   key6 = digitalRead(buttonPins[5]);
   key7 = digitalRead(buttonPins[6]);
-  key8 = digitalRead(buttonPins[7]);
 
   black1 = digitalRead(blackKeyPins[0]);
   black2 = digitalRead(blackKeyPins[1]);
@@ -208,6 +207,10 @@ void pin_read() {
 }
 
 void play() {
+  for(int i = 0; i < 4; i++){
+    if(!playable[i]) finished[i] = true;
+  }  
+  
   if(playable[0] && !(still_playing() && finished[0])) {
     duration = firstTrackNotes[i1].duration;
     freq = firstTrackNotes[i1].freq;
@@ -217,20 +220,22 @@ void play() {
       timers[0] = millis();
       tones[0].stop();
       i1 = (i1 + 1) % trackIndexes[0];
+      if (i1 == 0) finished[0] = true;
 
       Serial.print("Playing ");
       Serial.print(freq);
       Serial.print(" for ");
-      Serial.println(duration);
-
-      if (i1 == 0) finished[0] = true;
+      Serial.print(duration);
+      Serial.print(" index ");
+      Serial.print(i1);
+      Serial.print(" out of ");
+      Serial.println(trackIndexes[0]);
     }
   }
-  /*
-  if(! (still_playing() && finished[1])) {
+  if(playable[1] && !(still_playing() && finished[1])) {
     duration = secondTrackNotes[i2].duration;
     freq = secondTrackNotes[i2].freq;
-    if(freq) tones[i2].play(freq);
+    if(freq) tones[1].play(freq);
 
     if(millis() > timers[1] + duration) {
       timers[1] = millis();
@@ -240,10 +245,10 @@ void play() {
     }
   }
 
-  if(! (still_playing() && finished[2])) {
+  if(playable[2] &&  !(still_playing() && finished[2])) {
     duration = thirdTrackNotes[i3].duration;
     freq = thirdTrackNotes[i3].freq;
-    if(freq) tones[i3].play(freq);
+    if(freq) tones[2].play(freq);
 
     if(millis() > timers[2] + duration) {
       timers[2] = millis();
@@ -253,10 +258,10 @@ void play() {
     }
   }
 
-  if(! (still_playing() && finished[3])) {
+  if(playable[3] && !(still_playing() && finished[3])) {
     duration = fourthTrackNotes[i4].duration;
     freq = fourthTrackNotes[i4].freq;
-    if(freq) tones[i4].play(freq);
+    if(freq) tones[3].play(freq);
 
     if(millis() > timers[3] + duration) {
       timers[3] = millis();
@@ -265,7 +270,6 @@ void play() {
       if (i4 == 0) finished[3] = true;
     }
   }
-  */
   if(all_finished()) {
     start_all();
   }
@@ -273,20 +277,21 @@ void play() {
 bool still_playing() {
   return !(finished[0] && finished[1] && finished[2] && finished[3]);
 }
-bool all_finished() {
-  return finished[0] && finished[1] && finished[2] && finished[3];
-}
 bool start_all() {
   i1 = 0; i2 = 0; i3 = 0; i4 = 0;
-  finished[0] = false;
-  finished[1] = false;
-  finished[2] = false;
-  finished[3] = false;
+  finished[0] = false || !playable[0];
+  finished[1] = false || !playable[1];
+  finished[2] = false || !playable[2];
+  finished[3] = false || !playable[3];
+}
+bool all_finished() {
+  return finished[0] && finished[1] && finished[2] && finished[3];
 }
 
 void process_rec_pause() {
   if (recordButton == LOW) { //setup recording state
     delay(500);
+    Serial.println("RECORDING");
     digitalWrite(ledPins[(currentToneIndex + 2) % 4], HIGH);
     recording = true;
     paused = false;
@@ -297,13 +302,13 @@ void process_rec_pause() {
   }
   if (pauseButton == LOW) { //register last delay
     endTime = millis();
-    Serial.println("Paused");
+    Serial.println("PAUSED");
     digitalWrite(ledPins[(currentToneIndex + 2) % 4], LOW);
-
-    trackNotes[*trackIndex].freq = 0;
-    trackNotes[*trackIndex].duration = startTime - endTime;
-    (*trackIndex)++;
-
+    if(endTime - startTime > 100) {
+      trackNotes[*trackIndex].freq = 0;
+      trackNotes[*trackIndex].duration = endTime - startTime;
+      (*trackIndex)++;
+    }
     recording = false;
     paused = true;
 
@@ -408,20 +413,22 @@ void processKeys() {
 
       endTime = millis();
 
-      Serial.print("End note: ");
-      Serial.print(lastNote);
+      if(endTime - startTime > 100) {
+      
+        Serial.print("End note: ");
+        Serial.print(lastNote);
+      
+        trackNotes[*trackIndex].freq = lastNote;
+        trackNotes[*trackIndex].duration = endTime - startTime;
 
-      trackNotes[*trackIndex].freq = lastNote;
-      trackNotes[*trackIndex].duration = endTime - startTime;
+        Serial.print(" Duration ");
+        Serial.print(endTime - startTime);
 
-      Serial.print(" Duration ");
-      Serial.println(endTime - startTime);
-
-      lastNote = 0;
-      (*trackIndex)++;
-      Serial.print("Track index: ");
-      Serial.print(*trackIndex);
-      Serial.println(trackIndexes[0]);
+        lastNote = 0;
+        (*trackIndex)++;
+        Serial.print("Track index: ");
+        Serial.print(*trackIndex);
+      }
     }
   }
 }
