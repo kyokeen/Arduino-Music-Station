@@ -37,21 +37,18 @@ unsigned long startTime = 0;
 unsigned long endTime = 0;
 bool recording = false;
 bool paused = false; 
-bool playable[4] = {true, true, false, false};
+bool playable[4] = {true, true, true, true};
 
 unsigned long timers[4] = {0, 0, 0, 0};
-unsigned long time_now1 = 0;
-unsigned long time_now2 = 0;
 unsigned int freq;
 unsigned int duration;
 
 int i1 = 0, i2 = 0, i3 = 0, i4 = 0;
 int j = 0;
-int trackIndexes[4] = {6, 7, 0, 0};
+int trackIndexes[4] = {6, 7, 5, 4};
 
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);
   pin_config();
 
@@ -75,12 +72,12 @@ void setup() {
   firstTrackNotes[5].freq = 0;
 
   secondTrackNotes[0].freq = octave1[5];
-  secondTrackNotes[1].freq = octave1[4];//blackKeys1[4];
+  secondTrackNotes[1].freq = octave1[4];
   secondTrackNotes[2].freq = octave1[5];
-  secondTrackNotes[3].freq = 0;//blackKeys1[3];
+  secondTrackNotes[3].freq = 0;
   secondTrackNotes[4].freq = octave1[4];
-  secondTrackNotes[5].freq = octave1[3];//blackKeys1[2];
-  secondTrackNotes[6].freq = 0;//octave1[3];
+  secondTrackNotes[5].freq = octave1[3];
+  secondTrackNotes[6].freq = 0;
 
   
   firstTrackNotes[0].duration = 700;
@@ -99,17 +96,32 @@ void setup() {
   secondTrackNotes[5].duration = 300;
   secondTrackNotes[6].duration = 200;
 
+  thirdTrackNotes[0].freq = octave2[0];
+  thirdTrackNotes[1].freq = 0;
+  thirdTrackNotes[2].freq = octave2[1];
+  thirdTrackNotes[3].freq = octave2[2];
+  thirdTrackNotes[4].freq = 0;
+
+  thirdTrackNotes[0].duration = 1600;
+  thirdTrackNotes[1].duration = 1200;
+  thirdTrackNotes[2].duration = 200;
+  thirdTrackNotes[3].duration = 600;
+  thirdTrackNotes[4].duration = 500;
+
+  fourthTrackNotes[0].freq = 0;
+  fourthTrackNotes[1].freq = octave1[2];
+  fourthTrackNotes[2].freq = octave1[1];
+  fourthTrackNotes[3].freq = 0;
+
+  fourthTrackNotes[0].duration = 3000;
+  fourthTrackNotes[1].duration = 600;
+  fourthTrackNotes[2].duration = 300;
+  fourthTrackNotes[3].duration = 500;
 }
 
 void loop() {
   pin_read();
-
-  for(int i = 0; i < 4; i++){
-    if(!playable[i]) finished[i] = true;
-  }  
   play();
-
-  
 }
 
 void pin_config() {
@@ -132,6 +144,10 @@ void pin_read() {
 }
 
 void play() {
+  for(int i = 0; i < 4; i++){
+    if(!playable[i]) finished[i] = true;
+  }  
+  
   if(playable[0] && !(still_playing() && finished[0])) {
     duration = firstTrackNotes[i1].duration;
     freq = firstTrackNotes[i1].freq;

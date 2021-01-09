@@ -52,6 +52,9 @@ unsigned long endTime = 0;
 bool recording = false;
 bool paused = false; 
 
+unsigned long int startTime_dbg = 0;
+unsigned long int endTime_dbg = 0;
+
 void setup() {
   Serial.begin(9600);
   pin_config();
@@ -72,10 +75,18 @@ void loop() {
   pin_read(); 
   track_set();
   octave_set();
+
   //Serial.print(track1);
   //Serial.print(track2);
   //Serial.println(currentToneIndex);
   //delay(100);
+
+
+  if(millis() > startTime_dbg + 500) {
+      startTime_dbg = millis();
+      Serial.println(playable[0]);
+    }
+
   process_rec_pause();
   play();
   processKeys();
@@ -286,6 +297,7 @@ void process_rec_pause() {
   }
   if (pauseButton == LOW) { //register last delay
     endTime = millis();
+    Serial.println("Paused");
     digitalWrite(ledPins[(currentToneIndex + 2) % 4], LOW);
 
     trackNotes[*trackIndex].freq = 0;
